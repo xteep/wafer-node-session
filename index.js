@@ -26,6 +26,7 @@ function session(options = {}) {
     const appId = requireOption('appId');
     const appSecret = requireOption('appSecret');
     const loginPath = requireOption('loginPath');
+    const cb = options.loginCallback || function(){};
 
     store = options.store || new MemoryStore();
     if (typeof store.set !== 'function' || typeof store.get !== 'function') {
@@ -66,7 +67,7 @@ function session(options = {}) {
                 if (!session) {
                     throw new Error('会话过期');
                 }
-                
+
                 if (skey != generateSkey(session.sessionKey)) {
                     throw new Error('skey 不正确');
                 }
@@ -129,6 +130,7 @@ function session(options = {}) {
             session.sessionKey = sessionKey;
             session.userInfo = userInfo;
             session.cookie = new Cookie({ maxAge }); // fake cookie to support express-session Stores
+            cb(request, session);
 
             // save the session
             store.set(session.id, session, (err) => {
